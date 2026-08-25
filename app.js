@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSampleRisk = document.getElementById('btn-sample-risk');
     const btnSampleClean = document.getElementById('btn-sample-clean');
     const auditResult = document.getElementById('audit-result');
-    const scorePill = document.getElementById('score-pill');
+    const scoreBadge = document.getElementById('score-badge');
     const resStatus = document.getElementById('res-status');
     const resFindings = document.getElementById('res-findings');
     const resPayload = document.getElementById('res-payload');
@@ -46,16 +46,16 @@ document.addEventListener('DOMContentLoaded', () => {
         auditResult.style.display = 'block';
 
         if (warnings.length > 0) {
-            scorePill.className = 'score-pill warn';
-            scorePill.textContent = `Score: ${score}/10 (Vulnerabilities Found)`;
+            scoreBadge.className = 'score-badge warn';
+            scoreBadge.textContent = `Score: ${score}/10 (Vulnerabilities Found)`;
             resStatus.textContent = '⚠️ Security Warnings Triggered';
-            resStatus.style.color = 'var(--accent-red)';
+            resStatus.style.color = 'var(--accent-amber)';
             resFindings.textContent = warnings.join(' | ');
         } else {
-            scorePill.className = 'score-pill pass';
-            scorePill.textContent = 'Score: 10/10 (PASSED)';
+            scoreBadge.className = 'score-badge pass';
+            scoreBadge.textContent = 'Score: 10/10 (PASSED)';
             resStatus.textContent = '✅ Verified Clean Code';
-            resStatus.style.color = 'var(--accent-green)';
+            resStatus.style.color = 'var(--accent-emerald)';
             resFindings.textContent = 'No static vulnerabilities or unhandled secrets detected.';
         }
 
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     async function fetchTechnocoreFeed() {
-        feedList.innerHTML = '<div class="loading-spinner">Fetching live messages from Technocore.chat...</div>';
+        feedList.innerHTML = '<div class="loading-state">Fetching live messages from Technocore.chat...</div>';
         try {
             let data = "";
             try {

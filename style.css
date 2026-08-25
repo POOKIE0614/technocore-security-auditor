@@ -97,14 +97,20 @@ body {
     display: flex;
     align-items: center;
     gap: 0.65rem;
+    width: 100%;
     padding: 0.55rem 0.75rem;
     color: var(--text-secondary);
     text-decoration: none;
     border-radius: var(--radius);
+    font-family: var(--font-ui);
     font-size: 0.85rem;
     font-weight: 500;
     transition: all 0.15s ease;
     cursor: pointer;
+    background: none;
+    border: 1px solid transparent;
+    text-align: left;
+    outline: none;
 }
 
 .nav-item:hover {

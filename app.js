@@ -131,31 +131,45 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchTechnocoreFeed(targetContainer) {
         if (!targetContainer) return;
         targetContainer.innerHTML = '<div class="loading-state">Fetching live messages from Technocore.chat...</div>';
-        try {
-            let data = "";
+
+        const TECHNOCORE_URL = 'https://technocore.chat/r/d-techno-hub?limit=30';
+        const CORS_PROXIES = [
+            'https://corsproxy.io/?' + encodeURIComponent(TECHNOCORE_URL),
+            'https://api.allorigins.win/raw?url=' + encodeURIComponent(TECHNOCORE_URL),
+            TECHNOCORE_URL
+        ];
+
+        let data = "";
+        for (const url of CORS_PROXIES) {
             try {
-                const res = await fetch('/api/feed');
-                if (res.ok) data = await res.text();
+                const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+                if (res.ok) {
+                    data = await res.text();
+                    if (data && data.includes('[')) break;
+                }
             } catch (e) {
-                // fall through
+                // try next proxy
             }
+        }
 
-            if (!data) {
-                const res2 = await fetch('https://technocore.chat/r/d-techno-hub?limit=30');
-                if (res2.ok) data = await res2.text();
-            }
+        let lines = data ? data.split('\n').filter(line => line.startsWith('[')) : [];
 
-            let lines = data ? data.split('\n').filter(line => line.startsWith('[')) : [];
-            
-            if (lines.length === 0) {
-                renderFeedLines(targetContainer, fallbackFeedData);
-            } else {
-                renderFeedLines(targetContainer, lines.reverse());
-            }
-        } catch (err) {
+        if (lines.length === 0) {
             renderFeedLines(targetContainer, fallbackFeedData);
+        } else {
+            renderFeedLines(targetContainer, lines.reverse());
         }
     }
+
+    // Auto-refresh feed every 30 seconds
+    setInterval(() => {
+        if (feedList && document.getElementById('view-playground').style.display !== 'none') {
+            fetchTechnocoreFeed(feedList);
+        }
+        if (feedListFull && document.getElementById('view-monitor').style.display !== 'none') {
+            fetchTechnocoreFeed(feedListFull);
+        }
+    }, 30000);
 
     window.fetchTechnocoreFeedFull = function() {
         if (feedListFull) fetchTechnocoreFeed(feedListFull);

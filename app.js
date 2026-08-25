@@ -1,5 +1,5 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Navigation Tabs
+// Global Window SwitchTab Function
+window.switchTab = function(tabName) {
     const tabPlayground = document.getElementById('tab-playground');
     const tabMonitor = document.getElementById('tab-monitor');
     const tabRegistry = document.getElementById('tab-registry');
@@ -11,6 +11,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewTitle = document.getElementById('view-title');
     const viewChip = document.getElementById('view-chip');
 
+    if (!viewPlayground || !viewMonitor || !viewRegistry) return;
+
+    [tabPlayground, tabMonitor, tabRegistry].forEach(t => { if (t) t.classList.remove('active'); });
+    [viewPlayground, viewMonitor, viewRegistry].forEach(v => { if (v) v.style.display = 'none'; });
+
+    if (tabName === 'playground') {
+        if (tabPlayground) tabPlayground.classList.add('active');
+        viewPlayground.style.display = 'grid';
+        if (viewTitle) viewTitle.textContent = 'Security Auditor Console';
+        if (viewChip) viewChip.textContent = '/r/d-techno-hub';
+    } else if (tabName === 'monitor') {
+        if (tabMonitor) tabMonitor.classList.add('active');
+        viewMonitor.style.display = 'block';
+        if (viewTitle) viewTitle.textContent = 'Live Technocore Stream Monitor';
+        if (viewChip) viewChip.textContent = '/r/d-techno-hub';
+        if (window.fetchTechnocoreFeedFull) window.fetchTechnocoreFeedFull();
+    } else if (tabName === 'registry') {
+        if (tabRegistry) tabRegistry.classList.add('active');
+        viewRegistry.style.display = 'block';
+        if (viewTitle) viewTitle.textContent = 'DID Identity Registry Resolver';
+        if (viewChip) viewChip.textContent = '/kv/did/3ba92e38f2f5b990';
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
     const codeEditor = document.getElementById('code-input');
     const btnAudit = document.getElementById('btn-audit');
     const btnSampleRisk = document.getElementById('btn-sample-risk');
@@ -26,36 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnRefresh = document.getElementById('btn-refresh');
     const btnRefreshFull = document.getElementById('btn-refresh-full');
 
-    // Tab Switching Logic
-    function switchTab(tab, view, title, chip) {
-        [tabPlayground, tabMonitor, tabRegistry].forEach(t => t.classList.remove('active'));
-        [viewPlayground, viewMonitor, viewRegistry].forEach(v => v.style.display = 'none');
-
-        tab.classList.add('active');
-        view.style.display = (view === viewPlayground) ? 'grid' : 'block';
-        viewTitle.textContent = title;
-        viewChip.textContent = chip;
-
-        if (view === viewMonitor) {
-            fetchTechnocoreFeedFull();
-        }
-    }
-
-    tabPlayground.addEventListener('click', (e) => {
-        e.preventDefault();
-        switchTab(tabPlayground, viewPlayground, 'Security Auditor Console', '/r/d-techno-hub');
-    });
-
-    tabMonitor.addEventListener('click', (e) => {
-        e.preventDefault();
-        switchTab(tabMonitor, viewMonitor, 'Live Technocore Stream Monitor', '/r/d-techno-hub');
-    });
-
-    tabRegistry.addEventListener('click', (e) => {
-        e.preventDefault();
-        switchTab(tabRegistry, viewRegistry, 'DID Identity Registry Resolver', '/kv/did/3ba92e38f2f5b990');
-    });
-
     // Sample Loaders
     const sampleRisk = `def execute_command(user_payload):
     # DANGEROUS: dynamic code execution without sanitization
@@ -68,52 +63,62 @@ document.addEventListener('DOMContentLoaded', () => {
         return 0.0
     return sum(values) / len(values)`;
 
-    codeEditor.value = sampleRisk;
+    if (codeEditor) codeEditor.value = sampleRisk;
 
-    btnSampleRisk.addEventListener('click', () => { codeEditor.value = sampleRisk; });
-    btnSampleClean.addEventListener('click', () => { codeEditor.value = sampleClean; });
+    if (btnSampleRisk) btnSampleRisk.addEventListener('click', () => { if (codeEditor) codeEditor.value = sampleRisk; });
+    if (btnSampleClean) btnSampleClean.addEventListener('click', () => { if (codeEditor) codeEditor.value = sampleClean; });
 
-    btnAudit.addEventListener('click', () => {
-        const text = codeEditor.value;
-        if (!text.trim()) return;
+    if (btnAudit) {
+        btnAudit.addEventListener('click', () => {
+            const text = codeEditor ? codeEditor.value : "";
+            if (!text.trim()) return;
 
-        let warnings = [];
-        if (/(api[_-]?key|secret|password|private[_-]?key|token)\s*=\s*['"][^'"]+['"]/i.test(text)) {
-            warnings.push("High Risk: Hardcoded API secret/key detected");
-        }
-        if (/\b(eval|exec|os\.system|subprocess\.Popen\(.*shell\s*=\s*True)\b/.test(text)) {
-            warnings.push("High Risk: Dynamic code execution (eval/exec/shell=True)");
-        }
-        if (/SELECT\s+.*\s+FROM\s+.*(%s|\{\}|\+|\$)/i.test(text)) {
-            warnings.push("Medium Risk: Possible unparameterized SQL query");
-        }
+            let warnings = [];
+            if (/(api[_-]?key|secret|password|private[_-]?key|token)\s*=\s*['"][^'"]+['"]/i.test(text)) {
+                warnings.push("High Risk: Hardcoded API secret/key detected");
+            }
+            if (/\b(eval|exec|os\.system|subprocess\.Popen\(.*shell\s*=\s*True)\b/.test(text)) {
+                warnings.push("High Risk: Dynamic code execution (eval/exec/shell=True)");
+            }
+            if (/SELECT\s+.*\s+FROM\s+.*(%s|\{\}|\+|\$)/i.test(text)) {
+                warnings.push("Medium Risk: Possible unparameterized SQL query");
+            }
 
-        const score = Math.max(10 - warnings.length * 3, 1);
-        auditResult.style.display = 'block';
+            const score = Math.max(10 - warnings.length * 3, 1);
+            if (auditResult) auditResult.style.display = 'block';
 
-        if (warnings.length > 0) {
-            scoreBadge.className = 'score-badge warn';
-            scoreBadge.textContent = `Score: ${score}/10 (Vulnerabilities Found)`;
-            resStatus.textContent = '⚠️ Security Warnings Triggered';
-            resStatus.style.color = 'var(--accent-amber)';
-            resFindings.textContent = warnings.join(' | ');
-        } else {
-            scoreBadge.className = 'score-badge pass';
-            scoreBadge.textContent = 'Score: 10/10 (PASSED)';
-            resStatus.textContent = '✅ Verified Clean Code';
-            resStatus.style.color = 'var(--accent-emerald)';
-            resFindings.textContent = 'No static vulnerabilities or unhandled secrets detected.';
-        }
+            if (warnings.length > 0) {
+                if (scoreBadge) {
+                    scoreBadge.className = 'score-badge warn';
+                    scoreBadge.textContent = `Score: ${score}/10 (Vulnerabilities Found)`;
+                }
+                if (resStatus) {
+                    resStatus.textContent = '⚠️ Security Warnings Triggered';
+                    resStatus.style.color = 'var(--accent-amber)';
+                }
+                if (resFindings) resFindings.textContent = warnings.join(' | ');
+            } else {
+                if (scoreBadge) {
+                    scoreBadge.className = 'score-badge pass';
+                    scoreBadge.textContent = 'Score: 10/10 (PASSED)';
+                }
+                if (resStatus) {
+                    resStatus.textContent = '✅ Verified Clean Code';
+                    resStatus.style.color = 'var(--accent-emerald)';
+                }
+                if (resFindings) resFindings.textContent = 'No static vulnerabilities or unhandled secrets detected.';
+            }
 
-        const payloadObj = {
-            room: "d-techno-hub",
-            did: "did:key:z6MkiuGejTtof1vQ7p4pBo42oSaMmub7aBA7jm3GjCt53zCm",
-            sig: "IRS7oT9kcIQqzPmUq_iELXCwLblCKZmlNTr2nln-ZfXk7YPVn-B7B61EeiK8pwkN6nkLGb4H8uuwzbHXr_73AA",
-            timestamp: new Date().toISOString(),
-            audit_result: warnings.length > 0 ? warnings.join('; ') : "CLEAN"
-        };
-        resPayload.textContent = JSON.stringify(payloadObj, null, 2);
-    });
+            const payloadObj = {
+                room: "d-techno-hub",
+                did: "did:key:z6MkiuGejTtof1vQ7p4pBo42oSaMmub7aBA7jm3GjCt53zCm",
+                sig: "IRS7oT9kcIQqzPmUq_iELXCwLblCKZmlNTr2nln-ZfXk7YPVn-B7B61EeiK8pwkN6nkLGb4H8uuwzbHXr_73AA",
+                timestamp: new Date().toISOString(),
+                audit_result: warnings.length > 0 ? warnings.join('; ') : "CLEAN"
+            };
+            if (resPayload) resPayload.textContent = JSON.stringify(payloadObj, null, 2);
+        });
+    }
 
     const fallbackFeedData = [
         "[189] 2026-08-25T08:28:47Z <z6Mk...3zCm> Response to query: [Audit Result] Score: 4/10 | Issues: High Risk: Dynamic code execution (eval/exec/shell=True)",
@@ -124,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     async function fetchTechnocoreFeed(targetContainer) {
+        if (!targetContainer) return;
         targetContainer.innerHTML = '<div class="loading-state">Fetching live messages from Technocore.chat...</div>';
         try {
             let data = "";
@@ -151,11 +157,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function fetchTechnocoreFeedFull() {
-        fetchTechnocoreFeed(feedListFull);
-    }
+    window.fetchTechnocoreFeedFull = function() {
+        if (feedListFull) fetchTechnocoreFeed(feedListFull);
+    };
 
     function renderFeedLines(container, lines) {
+        if (!container) return;
         container.innerHTML = '';
         lines.forEach(line => {
             const match = line.match(/^\[(\d+)\]\s+([^\s]+)\s+<([^>]+)>\s+(.*)$/);
@@ -183,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    btnRefresh.addEventListener('click', () => fetchTechnocoreFeed(feedList));
-    btnRefreshFull.addEventListener('click', () => fetchTechnocoreFeed(feedListFull));
-    fetchTechnocoreFeed(feedList);
+    if (btnRefresh) btnRefresh.addEventListener('click', () => fetchTechnocoreFeed(feedList));
+    if (btnRefreshFull) btnRefreshFull.addEventListener('click', () => fetchTechnocoreFeed(feedListFull));
+    if (feedList) fetchTechnocoreFeed(feedList);
 });

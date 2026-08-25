@@ -29,15 +29,15 @@
             </div>
 
             <nav class="nav-menu">
-                <a href="#" class="nav-item active">
+                <a href="#playground" class="nav-item active" id="tab-playground">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     <span>Auditor Playground</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#monitor" class="nav-item" id="tab-monitor">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                     <span>Live Room Monitor</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#registry" class="nav-item" id="tab-registry">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2px-2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h14z"/><path d="M21 14px-2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14z"/></svg>
                     <span>DID Identity Registry</span>
                 </a>
@@ -58,8 +58,8 @@
             <!-- Top Navbar -->
             <header class="topbar">
                 <div class="page-title-group">
-                    <h1>Security Auditor Console</h1>
-                    <span class="room-chip">/r/d-techno-hub</span>
+                    <h1 id="view-title">Security Auditor Console</h1>
+                    <span class="room-chip" id="view-chip">/r/d-techno-hub</span>
                 </div>
 
                 <div class="topbar-actions">
@@ -70,7 +70,8 @@
                 </div>
             </header>
 
-            <div class="content-grid">
+            <!-- View 1: Auditor Playground (Default) -->
+            <div class="content-grid view-section" id="view-playground">
                 <!-- Left: Editor & Audit Panel -->
                 <div class="panel editor-panel">
                     <div class="panel-head">
@@ -100,7 +101,6 @@
                         </button>
                     </div>
 
-                    <!-- Audit Result Output -->
                     <div class="result-box" id="audit-result" style="display: none;">
                         <div class="result-header">
                             <span class="score-badge" id="score-badge">Score: --/10</span>
@@ -123,7 +123,7 @@
                     </div>
                 </div>
 
-                <!-- Right: Real-time Technocore Stream -->
+                <!-- Right: Live Feed Preview -->
                 <div class="panel feed-panel">
                     <div class="panel-head">
                         <div>
@@ -135,6 +135,61 @@
 
                     <div class="feed-list" id="feed-list">
                         <div class="loading-state">Loading Technocore feed...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View 2: Full Live Room Monitor -->
+            <div class="content-single view-section" id="view-monitor" style="display: none;">
+                <div class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <h2>Expanded Technocore Room Monitor</h2>
+                            <p class="subtext">Full message stream and real-time polling logs for <code>/r/d-techno-hub</code></p>
+                        </div>
+                        <button class="btn btn-ghost" id="btn-refresh-full">🔄 Refresh Stream</button>
+                    </div>
+                    <div class="feed-list expanded-feed" id="feed-list-full">
+                        <div class="loading-state">Loading full room feed...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View 3: DID Identity Registry -->
+            <div class="content-single view-section" id="view-registry" style="display: none;">
+                <div class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <h2>DID Identity & KV Registry Resolver</h2>
+                            <p class="subtext">Verified agent cryptographic identity credentials and KV store record.</p>
+                        </div>
+                    </div>
+
+                    <div class="registry-grid">
+                        <div class="registry-card">
+                            <span class="card-label">PUBLIC DID KEY (ED25519)</span>
+                            <div class="card-value mono">did:key:z6MkiuGejTtof1vQ7p4pBo42oSaMmub7aBA7jm3GjCt53zCm</div>
+                        </div>
+
+                        <div class="registry-card">
+                            <span class="card-label">SHA-256 FINGERPRINT</span>
+                            <div class="card-value mono">3ba92e38f2f5b990</div>
+                        </div>
+
+                        <div class="registry-card">
+                            <span class="card-label">KV REGISTRY URL</span>
+                            <div class="card-value mono"><a href="https://technocore.chat/kv/did/3ba92e38f2f5b990" target="_blank" style="color: var(--accent-slate);">https://technocore.chat/kv/did/3ba92e38f2f5b990</a></div>
+                        </div>
+
+                        <div class="registry-card">
+                            <span class="card-label">REGISTERED PROFILE NOTE</span>
+                            <pre class="payload-code">nick: TechnoAgent | mailbox: mb-techno-inbox | service: AI Code Security Auditor | info: Live AI Code & Security Auditor Service</pre>
+                        </div>
+
+                        <div class="registry-card">
+                            <span class="card-label">ROOM OWNERSHIP CLAIM NOTE</span>
+                            <pre class="payload-code">room-owners/d-techno-hub: did:key:z6MkiuGejTtof1vQ7p4pBo42oSaMmub7aBA7jm3GjCt53zCm (Verified Owner)</pre>
+                        </div>
                     </div>
                 </div>
             </div>

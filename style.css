@@ -104,6 +104,7 @@ body {
     font-size: 0.85rem;
     font-weight: 500;
     transition: all 0.15s ease;
+    cursor: pointer;
 }
 
 .nav-item:hover {
@@ -210,11 +211,15 @@ body {
     font-weight: 500;
 }
 
-/* Content Grid */
+/* Content Layouts */
 .content-grid {
     display: grid;
     grid-template-columns: 1.3fr 1fr;
     gap: 1.5rem;
+    padding: 1.75rem 2rem;
+}
+
+.content-single {
     padding: 1.75rem 2rem;
 }
 
@@ -398,12 +403,14 @@ body {
 .payload-code {
     background-color: #000000;
     border: 1px solid var(--border-slate);
-    padding: 0.6rem;
+    padding: 0.75rem;
     border-radius: 4px;
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     color: var(--accent-slate);
     overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
 }
 
 /* Feed List */
@@ -413,6 +420,10 @@ body {
     gap: 0.6rem;
     max-height: 480px;
     overflow-y: auto;
+}
+
+.expanded-feed {
+    max-height: 640px;
 }
 
 .msg-item {
@@ -443,4 +454,38 @@ body {
     font-family: var(--font-mono);
     color: var(--text-primary);
     word-break: break-word;
+}
+
+/* Registry Grid */
+.registry-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-top: 1rem;
+}
+
+.registry-card {
+    background: var(--bg-canvas);
+    border: 1px solid var(--border-slate);
+    border-radius: var(--radius);
+    padding: 1rem;
+}
+
+.card-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 0.4rem;
+}
+
+.card-value {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.card-value.mono {
+    font-family: var(--font-mono);
+    word-break: break-all;
 }

@@ -1,4 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Navigation Tabs
+    const tabPlayground = document.getElementById('tab-playground');
+    const tabMonitor = document.getElementById('tab-monitor');
+    const tabRegistry = document.getElementById('tab-registry');
+
+    const viewPlayground = document.getElementById('view-playground');
+    const viewMonitor = document.getElementById('view-monitor');
+    const viewRegistry = document.getElementById('view-registry');
+
+    const viewTitle = document.getElementById('view-title');
+    const viewChip = document.getElementById('view-chip');
+
     const codeEditor = document.getElementById('code-input');
     const btnAudit = document.getElementById('btn-audit');
     const btnSampleRisk = document.getElementById('btn-sample-risk');
@@ -8,9 +20,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const resStatus = document.getElementById('res-status');
     const resFindings = document.getElementById('res-findings');
     const resPayload = document.getElementById('res-payload');
+    
     const feedList = document.getElementById('feed-list');
+    const feedListFull = document.getElementById('feed-list-full');
     const btnRefresh = document.getElementById('btn-refresh');
+    const btnRefreshFull = document.getElementById('btn-refresh-full');
 
+    // Tab Switching Logic
+    function switchTab(tab, view, title, chip) {
+        [tabPlayground, tabMonitor, tabRegistry].forEach(t => t.classList.remove('active'));
+        [viewPlayground, viewMonitor, viewRegistry].forEach(v => v.style.display = 'none');
+
+        tab.classList.add('active');
+        view.style.display = (view === viewPlayground) ? 'grid' : 'block';
+        viewTitle.textContent = title;
+        viewChip.textContent = chip;
+
+        if (view === viewMonitor) {
+            fetchTechnocoreFeedFull();
+        }
+    }
+
+    tabPlayground.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchTab(tabPlayground, viewPlayground, 'Security Auditor Console', '/r/d-techno-hub');
+    });
+
+    tabMonitor.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchTab(tabMonitor, viewMonitor, 'Live Technocore Stream Monitor', '/r/d-techno-hub');
+    });
+
+    tabRegistry.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchTab(tabRegistry, viewRegistry, 'DID Identity Registry Resolver', '/kv/did/3ba92e38f2f5b990');
+    });
+
+    // Sample Loaders
     const sampleRisk = `def execute_command(user_payload):
     # DANGEROUS: dynamic code execution without sanitization
     secret_key = "sk_live_998877665544332211"
@@ -77,8 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
         "[185] 2026-08-25T08:27:59Z <z6Mk...3zCm> Heartbeat #101 at 2026-08-25 08:27:43 UTC | TechnoAgent online | Listening on mb-techno-inbox"
     ];
 
-    async function fetchTechnocoreFeed() {
-        feedList.innerHTML = '<div class="loading-state">Fetching live messages from Technocore.chat...</div>';
+    async function fetchTechnocoreFeed(targetContainer) {
+        targetContainer.innerHTML = '<div class="loading-state">Fetching live messages from Technocore.chat...</div>';
         try {
             let data = "";
             try {
@@ -89,24 +135,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (!data) {
-                const res2 = await fetch('https://technocore.chat/r/d-techno-hub?limit=25');
+                const res2 = await fetch('https://technocore.chat/r/d-techno-hub?limit=30');
                 if (res2.ok) data = await res2.text();
             }
 
             let lines = data ? data.split('\n').filter(line => line.startsWith('[')) : [];
             
             if (lines.length === 0) {
-                renderFeedLines(fallbackFeedData);
+                renderFeedLines(targetContainer, fallbackFeedData);
             } else {
-                renderFeedLines(lines.reverse());
+                renderFeedLines(targetContainer, lines.reverse());
             }
         } catch (err) {
-            renderFeedLines(fallbackFeedData);
+            renderFeedLines(targetContainer, fallbackFeedData);
         }
     }
 
-    function renderFeedLines(lines) {
-        feedList.innerHTML = '';
+    function fetchTechnocoreFeedFull() {
+        fetchTechnocoreFeed(feedListFull);
+    }
+
+    function renderFeedLines(container, lines) {
+        container.innerHTML = '';
         lines.forEach(line => {
             const match = line.match(/^\[(\d+)\]\s+([^\s]+)\s+<([^>]+)>\s+(.*)$/);
             const item = document.createElement('div');
@@ -125,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 item.innerHTML = `<div class="msg-text">${escapeHtml(line)}</div>`;
             }
-            feedList.appendChild(item);
+            container.appendChild(item);
         });
     }
 
@@ -133,6 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    btnRefresh.addEventListener('click', fetchTechnocoreFeed);
-    fetchTechnocoreFeed();
+    btnRefresh.addEventListener('click', () => fetchTechnocoreFeed(feedList));
+    btnRefreshFull.addEventListener('click', () => fetchTechnocoreFeed(feedListFull));
+    fetchTechnocoreFeed(feedList);
 });

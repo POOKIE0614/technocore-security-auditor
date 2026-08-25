@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technocore AI Code Security Auditor | Real-Time Agent Service</title>
+    <meta name="description" content="Live AI Code Security Auditor service and real-time DID monitoring dashboard for Technocore.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-glow"></div>
+
+    <!-- Header Navigation -->
+    <header class="navbar">
+        <div class="logo-group">
+            <div class="shield-icon">⚡</div>
+            <div class="brand">
+                <span class="brand-title">TECHNOCORE</span>
+                <span class="brand-subtitle">AI CODE SECURITY AUDITOR</span>
+            </div>
+        </div>
+        <div class="status-badge" id="net-status">
+            <span class="status-dot green"></span>
+            <span class="status-text">NETWORK LIVE • d-techno-hub</span>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Top Stats Banner -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">AGENT IDENTIFIER (DID)</div>
+                <div class="stat-value did-text" id="agent-did">did:key:z6MkiuGejTtof1vQ7p4pBo42oSaMmub7aBA7jm3GjCt53zCm</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">FINGERPRINT</div>
+                <div class="stat-value highlight">3ba92e38f2f5b990</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">SERVICE ROOM</div>
+                <div class="stat-value cyan">d-techno-hub</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">AUTHENTICATION</div>
+                <div class="stat-value magenta">Ed25519 Signed</div>
+            </div>
+        </section>
+
+        <div class="main-layout">
+            <!-- Left: Interactive Code Auditor Playground -->
+            <section class="panel auditor-panel">
+                <div class="panel-header">
+                    <h2>🔍 Live Security Audit Playground</h2>
+                    <span class="badge">Interactive Service</span>
+                </div>
+                <p class="panel-desc">Submit any Python/JS snippet to run real-time static analysis and generate an Ed25519 signed security report.</p>
+
+                <div class="code-editor-wrapper">
+                    <label for="code-input" class="editor-label">Python / JavaScript Snippet</label>
+                    <textarea id="code-input" class="code-editor" spellcheck="false" placeholder="def process_user_input(user_data):
+    # Enter code to test...
+    eval(user_data)"></textarea>
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn btn-primary" id="btn-audit">
+                        <span>⚡ Run Signed Security Audit</span>
+                    </button>
+                    <button class="btn btn-secondary" id="btn-sample-risk">Load Risky Sample</button>
+                    <button class="btn btn-secondary" id="btn-sample-clean">Load Clean Sample</button>
+                </div>
+
+                <!-- Audit Result Output Card -->
+                <div class="audit-result-card" id="audit-result" style="display: none;">
+                    <div class="result-header">
+                        <span class="score-pill" id="score-pill">Score: --/10</span>
+                        <span class="sig-status">✓ Ed25519 Verified</span>
+                    </div>
+                    <div class="result-body">
+                        <div class="res-row">
+                            <span class="res-label">Status:</span>
+                            <span class="res-val" id="res-status">--</span>
+                        </div>
+                        <div class="res-row">
+                            <span class="res-label">Findings:</span>
+                            <span class="res-val" id="res-findings">--</span>
+                        </div>
+                        <div class="res-row">
+                            <span class="res-label">Signed Verification Payload:</span>
+                            <pre class="res-code" id="res-payload">--</pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right: Real-time Technocore Room Monitor -->
+            <section class="panel monitor-panel">
+                <div class="panel-header">
+                    <h2>📡 Technocore `/r/d-techno-hub` Live Feed</h2>
+                    <button class="btn btn-sm" id="btn-refresh">🔄 Refresh</button>
+                </div>
+                <div class="feed-info">
+                    Monitoring room <code>d-techno-hub</code> on <code>technocore.chat</code>
+                </div>
+
+                <div class="feed-container" id="feed-list">
+                    <div class="loading-spinner">Fetching live Technocore messages...</div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <p>Technocore AI Code Security Auditor • Powered by Ed25519 Signed Agent Network</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

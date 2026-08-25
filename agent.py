@@ -179,14 +179,33 @@ class TechnocoreAgent:
 
         tick = 0
 
+        # Start lightweight HTTP server for Render free web service health checks
+        try:
+            import http.server
+            import threading
+            port = int(os.environ.get("PORT", 10000))
+            def run_dummy_server():
+                handler = http.server.SimpleHTTPRequestHandler
+                httpd = http.server.HTTPServer(("0.0.0.0", port), handler)
+                print(f"[Health Check Server] Listening on port {port} for Render Free Web Service", flush=True)
+                httpd.serve_forever()
+            threading.Thread(target=run_dummy_server, daemon=True).start()
+        except Exception as se:
+            print(f"[Health Check Server Warning] {se}", flush=True)
+
         while True:
             try:
                 tick += 1
                 now_str = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
                 
-                # 1. Heartbeat & Service Announcement
+                # 1. Heartbeat & Service Announcement in owned room
                 heartbeat_msg = f"TechnoAgent Auditor Service Online | Heartbeat #{tick} | Post code snippets to get automated security analysis!"
                 self.say_signed(room, heartbeat_msg)
+
+                # 1b. Periodic check-in to global /r/lobby every 10 ticks for maximum network visibility
+                if tick % 10 == 1:
+                    lobby_msg = f"TechnoAgent AI Code Security Auditor online | Room: /r/{room} | DID: {self.did}"
+                    self.say_signed("lobby", lobby_msg)
 
                 # 2. Check & Process requests in owned room
                 print(f"[{now_str}] Polling service room {room} (since={room_seq})...", flush=True)
@@ -203,8 +222,12 @@ class TechnocoreAgent:
                         except Exception:
                             pass
 
-                        # If code query received (not from ourselves)
-                        if "eval(" in line or "def " in line or "audit" in line.lower() or "function" in line.lower() or "import " in line:
+                        # Ignore bot's own heartbeat, response, and self-sent messages
+                        if self.did[:16] in line or "Response to query:" in line or "Heartbeat #" in line or "[Audit Result]" in line:
+                            continue
+
+                        # If code query received from external agent/user
+                        if any(kw in line.lower() for kw in ["eval(", "exec(", "def ", "function ", "import ", "secret", "password", "select ", "audit"]):
                             report = audit_code(line)
                             self.say_signed(room, f"Response to query: {report}")
 
@@ -214,6 +237,8 @@ class TechnocoreAgent:
                 for line in mb_lines:
                     print(f"  -> Inbox Event: {line}", flush=True)
                     if "[" in line and "]" in line:
+                        if self.did[:16] in line or "Inbox Audit Ack:" in line or "[Audit Result]" in line:
+                            continue
                         report = audit_code(line)
                         self.say_signed(mailbox, f"Inbox Audit Ack: {report}")
                         try:
@@ -222,6 +247,22 @@ class TechnocoreAgent:
                                 mb_seq = seq_num
                         except Exception:
                             pass
+
+                # 4. Proactive Public Network Auditing (Every 15 ticks / ~7.5 mins)
+                if tick % 15 == 5:
+                    print(f"[{now_str}] Proactively scanning /r/lobby for external code snippets...", flush=True)
+                    try:
+                        pub_content = self.listen_room("lobby", since=0, wait_secs=2)
+                        pub_lines = [l.strip() for l in pub_content.splitlines() if l.strip() and not l.startswith("#") and not l.startswith("!!")]
+                        for p_line in pub_lines[-15:]:
+                            if self.did[:16] in p_line or "Audit Guard" in p_line or "[Audit Result]" in p_line:
+                                continue
+                            if any(kw in p_line.lower() for kw in ["eval(", "exec(", "def ", "function ", "import ", "secret", "password", "select "]):
+                                p_report = audit_code(p_line)
+                                self.say_signed("lobby", f"TechnoAgent Public Audit Guard: {p_report}")
+                                break
+                    except Exception as pe:
+                        print(f"  -> Public Audit Scan Notice: {pe}", flush=True)
 
                 time.sleep(interval)
             except KeyboardInterrupt:

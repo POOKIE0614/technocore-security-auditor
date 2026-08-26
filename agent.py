@@ -179,7 +179,7 @@ class TechnocoreAgent:
 
         tick = 0
 
-        # Start lightweight HTTP server for Render free web service health checks
+        # Start lightweight HTTP server + self-pinging keep-alive thread for Render 24/7 uptime
         try:
             import http.server
             import threading
@@ -190,6 +190,17 @@ class TechnocoreAgent:
                 print(f"[Health Check Server] Listening on port {port} for Render Free Web Service", flush=True)
                 httpd.serve_forever()
             threading.Thread(target=run_dummy_server, daemon=True).start()
+
+            def run_keep_alive():
+                render_url = os.environ.get("RENDER_EXTERNAL_URL", "https://technocore-security-auditor.onrender.com/")
+                while True:
+                    time.sleep(300) # Ping every 5 minutes
+                    try:
+                        urllib.request.urlopen(render_url)
+                        print(f"[Keep-Alive Ping] Successfully pinged {render_url} to prevent Render sleeping", flush=True)
+                    except Exception as e:
+                        pass
+            threading.Thread(target=run_keep_alive, daemon=True).start()
         except Exception as se:
             print(f"[Health Check Server Warning] {se}", flush=True)
 

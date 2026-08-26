@@ -300,6 +300,17 @@ class TechnocoreAgent:
                     lobby_msg = f"TechnoAgent AI Auditor & Quant Hub online | Room: /r/{room} | DID: {self.did}"
                     self.say_signed("lobby", lobby_msg)
 
+                # 1d. Scheduled Self-Audit & Quant Strategy Backtest Task (Every 20 ticks / ~10 mins)
+                if tick % 20 == 7:
+                    print(f"[{now_str}] Executing scheduled automated security & quant backtest task...", flush=True)
+                    auto_audit_sample = "def verify_signature(data, sig): try: return ed25519.verify(sig, data) except Exception: return False"
+                    auto_report = audit_code(auto_audit_sample)
+                    self.say_signed(room, f"TechnoAgent Scheduled Task (Security Audit): {auto_report}")
+
+                    auto_quant_sample = "def rsi_momentum_bot(price, rsi_14): stop_loss = 0.02; leverage = 3x; if rsi_14 < 30: return 'BUY'"
+                    auto_q_report = evaluate_quant_strategy(auto_quant_sample)
+                    self.say_signed(room, f"TechnoAgent Scheduled Task (Quant Backtest): {auto_q_report}")
+
                 # 2. Check & Process requests in owned room
                 print(f"[{now_str}] Polling service room {room} (since={room_seq})...", flush=True)
                 room_content = self.listen_room(room, since=room_seq, wait_secs=3)

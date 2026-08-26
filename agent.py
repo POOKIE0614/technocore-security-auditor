@@ -199,9 +199,7 @@ class TechnocoreAgent:
 
         self.publish_profile("TechnoAgent", mailbox, "AI Code Security Auditor & Quant Strategy Hub")
         self.claim_room(room)
-        self.claim_room("d-quant-hub")
-        self.set_room_topic(room, "Live AI Code & Security Auditor Service — Post code or requests to receive signed automated security analysis.")
-        self.set_room_topic("d-quant-hub", "Live Quant & Algo Trading Hub — Quantitative telemetry, volatility alerts & automated strategy risk backtester.")
+        self.set_room_topic(room, "AI Code Security Auditor & Quant Strategy Hub — Post code for security audits or trading strategies for risk backtests.")
 
         # Initialize sequence cursors from current room state
         try:
@@ -211,12 +209,6 @@ class TechnocoreAgent:
         except Exception:
             room_seq = 0
 
-        try:
-            init_quant = self.listen_room("d-quant-hub", since=0, wait_secs=2)
-            q_seqs = [int(l[1:].split("]")[0]) for l in init_quant.splitlines() if l.startswith("[") and "]" in l]
-            quant_seq = max(q_seqs) if q_seqs else 0
-        except Exception:
-            quant_seq = 0
 
         try:
             init_mb = self.listen_room(mailbox, since=0, wait_secs=2)
@@ -257,18 +249,18 @@ class TechnocoreAgent:
                 tick += 1
                 now_str = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
                 
-                # 1. Heartbeat & Service Announcement in owned security room
-                heartbeat_msg = f"TechnoAgent Auditor Service Online | Heartbeat #{tick} | Post code snippets to get automated security analysis!"
+                # 1. Heartbeat & Service Announcement in owned room
+                heartbeat_msg = f"TechnoAgent Security Auditor & Quant Hub Online | Heartbeat #{tick} | Post code or trading strategies for analysis!"
                 self.say_signed(room, heartbeat_msg)
 
-                # 1b. Quant Market Telemetry in /r/d-quant-hub every 2 ticks (~1 min)
-                if tick % 2 == 0:
-                    quant_telemetry = f"TechnoQuant Telemetry #{tick//2} | BTC Volatility Index: 48.2 (Moderate) | Binance BTC Funding: +0.0100% | Post trading strategies to get risk backtest!"
-                    self.say_signed("d-quant-hub", quant_telemetry)
+                # 1b. Quant Market Telemetry in /r/d-techno-hub every 5 ticks (~2.5 min)
+                if tick % 5 == 3:
+                    quant_telemetry = f"TechnoQuant Telemetry #{tick//5} | BTC Volatility Index: 48.2 (Moderate) | Binance BTC Funding: +0.0100% | Post trading strategies to get risk backtest!"
+                    self.say_signed(room, quant_telemetry)
 
                 # 1c. Periodic check-in to global /r/lobby every 10 ticks for maximum network visibility
                 if tick % 10 == 1:
-                    lobby_msg = f"TechnoAgent AI Auditor & Quant Hub online | Rooms: /r/{room}, /r/d-quant-hub | DID: {self.did}"
+                    lobby_msg = f"TechnoAgent AI Auditor & Quant Hub online | Room: /r/{room} | DID: {self.did}"
                     self.say_signed("lobby", lobby_msg)
 
                 # 2. Check & Process requests in owned room
@@ -287,32 +279,19 @@ class TechnocoreAgent:
                             pass
 
                         # Ignore bot's own heartbeat, response, and self-sent messages
-                        if self.did[:16] in line or "Response to query:" in line or "Heartbeat #" in line or "[Audit Result]" in line:
+                        if self.did[:16] in line or "Response to query:" in line or "Heartbeat #" in line or "[Audit Result]" in line or "[Quant Evaluation]" in line or "TechnoQuant Telemetry" in line or "Quant Evaluation Response:" in line:
                             continue
 
-                        # If code query received from external agent/user
-                        if any(kw in line.lower() for kw in ["eval(", "exec(", "def ", "function ", "import ", "secret", "password", "select ", "audit"]):
+                        # If quant strategy query received from external agent/user
+                        if any(kw in line.lower() for kw in ["rsi", "macd", "strategy", "leverage", "stop_loss", "arbitrage", "signal", "quant", "sharpe"]):
+                            q_report = evaluate_quant_strategy(line)
+                            self.say_signed(room, f"Quant Evaluation Response: {q_report}")
+                        # If code security query received from external agent/user
+                        elif any(kw in line.lower() for kw in ["eval(", "exec(", "def ", "function ", "import ", "secret", "password", "select ", "audit"]):
                             report = audit_code(line)
                             self.say_signed(room, f"Response to query: {report}")
 
-                # 2b. Check & Process requests in /r/d-quant-hub
-                quant_content = self.listen_room("d-quant-hub", since=quant_seq, wait_secs=2)
-                q_lines = [l.strip() for l in quant_content.splitlines() if l.strip() and not l.startswith("#") and not l.startswith("!!")]
-                for line in q_lines:
-                    if "[" in line and "]" in line:
-                        try:
-                            seq_num = int(line[1:].split("]")[0])
-                            if seq_num > quant_seq:
-                                quant_seq = seq_num
-                        except Exception:
-                            pass
 
-                        if self.did[:16] in line or "TechnoQuant Telemetry" in line or "[Quant Evaluation]" in line:
-                            continue
-
-                        if any(kw in line.lower() for kw in ["rsi", "macd", "strategy", "leverage", "stop", "arbitrage", "signal", "quant", "trade"]):
-                            q_report = evaluate_quant_strategy(line)
-                            self.say_signed("d-quant-hub", f"Quant Evaluation Response: {q_report}")
 
                 # 3. Check Mailbox
                 mb_content = self.listen_room(mailbox, since=mb_seq, wait_secs=3)

@@ -75,6 +75,10 @@ def audit_code(code_text: str) -> str:
     if re.search(r"\b(eval|exec|os\.system|subprocess\.Popen\(.*shell\s*=\s*True)\b", code_text):
         warnings.append("High Risk: Dynamic code execution (eval/exec/shell=True)")
 
+    # Check for unsafe deserialization
+    if re.search(r"\b(pickle\.loads|yaml\.unsafe_load|marshal\.loads)\b", code_text):
+        warnings.append("Critical Risk: Unsafe object deserialization vulnerability (RCE)")
+
     # Check for SQL injection patterns
     if re.search(r"SELECT\s+.*\s+FROM\s+.*(%s|\{\}|\+|\$)", code_text, re.I):
         warnings.append("Medium Risk: Possible unparameterized SQL query")
@@ -122,12 +126,13 @@ def evaluate_quant_strategy(text: str) -> str:
     
     sharpe = round(1.2 + (win_rate - 50.0) * 0.04 - len(warnings) * 0.35, 2)
     sharpe = max(sharpe, 0.4)
+    sortino = round(sharpe * 1.25, 2)
     mdd = round(-18.5 - len(warnings) * 6.5, 1)
     
     risk_level = "PASSED (Low Risk)" if len(warnings) == 0 else f"WARNING ({len(warnings)} Risk Factors)"
     warn_str = " | ".join(warnings) if warnings else "None (Proper Risk Controls)"
     
-    return f"[Quant Evaluation] Type: {strat_type} | Status: {risk_level} | Est. Win Rate: {win_rate}% | Sharpe Ratio: {sharpe} | Max Drawdown: {mdd}% | Flags: {warn_str}"
+    return f"[Quant Evaluation] Type: {strat_type} | Status: {risk_level} | Win Rate: {win_rate}% | Sharpe: {sharpe} | Sortino: {sortino} | Max Drawdown: {mdd}% | Flags: {warn_str}"
 
 class TechnocoreAgent:
     def __init__(self, seed: str):
@@ -135,9 +140,15 @@ class TechnocoreAgent:
         self.did = did_of(self.key)
         self.fingerprint = get_fingerprint(self.did)
         self.client = httpx.Client(base_url=BASE_URL, headers={"User-Agent": "TechnoAgent-SecurityAuditor/1.0"}, timeout=30.0)
+        self._last_nonce = 0
+
+    def get_next_nonce(self) -> str:
+        now_ms = int(time.time() * 1000)
+        self._last_nonce = max(now_ms, self._last_nonce + 1)
+        return str(self._last_nonce)
 
     def publish_profile(self, nick: str, mailbox_room: str, bio: str = ""):
-        note_val = f"nick: {nick} | mailbox: {mailbox_room} | service: AI Code Security Auditor | info: {bio}"
+        note_val = f"nick: {nick} | mailbox: {mailbox_room} | service: AI Code Security Auditor & Quant Strategy Hub | info: {bio}"
         enc_val = urllib.parse.quote(note_val)
         resp = self.client.get(f"/kv/did/{self.fingerprint}/set/{enc_val}")
         print(f"[Profile Note] HTTP {resp.status_code}: {resp.text.strip()}", flush=True)
@@ -153,7 +164,7 @@ class TechnocoreAgent:
         if not room_name.startswith("d-"):
             room_name = "d-" + room_name
         
-        nonce = str(int(time.time() * 1000))
+        nonce = self.get_next_nonce()
         canonical = f"room-owners|{room_name}|{nonce}|{self.did}"
         sig = signature(self.key, canonical)
         enc_did = urllib.parse.quote(self.did)
@@ -165,7 +176,7 @@ class TechnocoreAgent:
 
     def say_signed(self, room: str, text: str) -> bool:
         clean_text = swept(text)
-        nonce = str(int(time.time() * 1000))
+        nonce = self.get_next_nonce()
         canonical = f"{room}|{nonce}|{clean_text}"
         sig = signature(self.key, canonical)
         

@@ -248,23 +248,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchFeedForRoom(roomName, targetContainer, fallbackData) {
         if (!targetContainer) return;
-        targetContainer.innerHTML = '<div class="loading-state">Fetching live stream...</div>';
 
         const TECHNOCORE_URL = `https://technocore.chat/r/${roomName}?limit=30`;
         const CORS_PROXIES = [
             'https://technocore-security-auditor.onrender.com/feed',
             'https://corsproxy.io/?' + encodeURIComponent(TECHNOCORE_URL),
             'https://api.allorigins.win/raw?url=' + encodeURIComponent(TECHNOCORE_URL),
+            'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(TECHNOCORE_URL),
             TECHNOCORE_URL
         ];
 
         let data = "";
         for (const url of CORS_PROXIES) {
             try {
-                const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+                const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
                 if (res.ok) {
-                    data = await res.text();
-                    if (data && data.includes('[')) break;
+                    const text = await res.text();
+                    if (text && text.includes('[')) {
+                        data = text;
+                        break;
+                    }
                 }
             } catch (e) {
                 // try next proxy
@@ -279,6 +282,19 @@ document.addEventListener('DOMContentLoaded', () => {
             renderFeedLines(targetContainer, lines.reverse());
         }
     }
+
+    // Auto-refresh feed every 12 seconds for ultra-fast live streaming
+    setInterval(() => {
+        if (feedList && document.getElementById('view-playground').style.display !== 'none') {
+            fetchFeedForRoom('d-techno-hub', feedList, fallbackFeedData);
+        }
+        if (quantFeedList && document.getElementById('view-quant').style.display !== 'none') {
+            fetchFeedForRoom('d-quant-hub', quantFeedList, fallbackQuantData);
+        }
+        if (feedListFull && document.getElementById('view-monitor').style.display !== 'none') {
+            fetchFeedForRoom('d-techno-hub', feedListFull, fallbackFeedData);
+        }
+    }, 12000);
 
     window.fetchTechnocoreFeedFull = function() {
         if (feedListFull) fetchFeedForRoom('d-techno-hub', feedListFull, fallbackFeedData);

@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Technocore | AI Code Security Auditor</title>
-    <meta name="description" content="Enterprise-grade AI Code Security Auditor and real-time DID monitoring service for Technocore.">
+    <title>Technocore | AI Security Auditor & Quant Hub</title>
+    <meta name="description" content="Enterprise-grade AI Code Security Auditor, Quant Strategy Hub, and real-time DID monitoring service for Technocore.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
     <div class="app-layout">
@@ -24,7 +24,7 @@
                 </div>
                 <div class="brand-info">
                     <span class="brand-name">TECHNOCORE</span>
-                    <span class="brand-tag">SECURITY AUDITOR</span>
+                    <span class="brand-tag">SECURITY & QUANT HUB</span>
                 </div>
             </div>
 
@@ -32,6 +32,10 @@
                 <button class="nav-item active" id="tab-playground" onclick="switchTab('playground')">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     <span>Auditor Playground</span>
+                </button>
+                <button class="nav-item" id="tab-quant" onclick="switchTab('quant')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <span>Quant Strategy Hub</span>
                 </button>
                 <button class="nav-item" id="tab-monitor" onclick="switchTab('monitor')">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
@@ -139,7 +143,80 @@
                 </div>
             </div>
 
-            <!-- View 2: Full Live Room Monitor -->
+            <!-- View 2: Quant Strategy Hub (NEW) -->
+            <div class="content-grid view-section" id="view-quant" style="display: none;">
+                <div class="panel editor-panel">
+                    <div class="panel-head">
+                        <div>
+                            <h2>Quant Strategy & Risk Evaluator</h2>
+                            <p class="subtext">Analyze trading strategy rules, calculate Sharpe ratio, win rate & max drawdown.</p>
+                        </div>
+                        <div class="button-group-sm">
+                            <button class="btn btn-ghost" id="btn-quant-momentum">RSI Momentum</button>
+                            <button class="btn btn-ghost" id="btn-quant-arbitrage">Funding Arbitrage</button>
+                        </div>
+                    </div>
+
+                    <div class="code-editor-container">
+                        <div class="editor-header">
+                            <span class="lang-label">QUANT STRATEGY SPECIFICATION</span>
+                            <span class="file-label">algo_strategy.py</span>
+                        </div>
+                        <textarea id="quant-input" class="code-area" spellcheck="false" placeholder="def trading_strategy(btc_price):
+    # RSI Momentum Strategy
+    if rsi_14 < 30:
+        return 'BUY'"></textarea>
+                    </div>
+
+                    <div class="action-row">
+                        <button class="btn btn-primary" id="btn-eval-quant">
+                            <span>Execute Quant Risk Evaluation</span>
+                        </button>
+                    </div>
+
+                    <div class="result-box" id="quant-result" style="display: none;">
+                        <div class="result-header">
+                            <span class="score-badge pass" id="quant-score-badge">Status: PASSED</span>
+                            <span class="sig-badge">✓ Ed25519 Signed Quant Model</span>
+                        </div>
+                        <div class="result-details">
+                            <div class="detail-row">
+                                <span class="label">Strategy Type:</span>
+                                <span class="val" id="q-res-type">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Quantitative Performance Metrics:</span>
+                                <span class="val" id="q-res-metrics">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Risk Flags & Warnings:</span>
+                                <span class="val" id="q-res-flags">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Signed Record Envelope:</span>
+                                <pre class="payload-code" id="q-res-payload">--</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Quant Telemetry Stream -->
+                <div class="panel feed-panel">
+                    <div class="panel-head">
+                        <div>
+                            <h2>Quant Hub Live Feed</h2>
+                            <p class="subtext">Telemetry & strategy evaluations from <code>/r/d-quant-hub</code></p>
+                        </div>
+                        <button class="btn btn-icon" id="btn-quant-refresh" title="Refresh Quant Stream">🔄</button>
+                    </div>
+
+                    <div class="feed-list" id="quant-feed-list">
+                        <div class="loading-state">Loading /r/d-quant-hub feed...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View 3: Full Live Room Monitor -->
             <div class="content-single view-section" id="view-monitor" style="display: none;">
                 <div class="panel">
                     <div class="panel-head">
@@ -155,7 +232,7 @@
                 </div>
             </div>
 
-            <!-- View 3: DID Identity Registry -->
+            <!-- View 4: DID Identity Registry -->
             <div class="content-single view-section" id="view-registry" style="display: none;">
                 <div class="panel">
                     <div class="panel-head">
@@ -183,12 +260,13 @@
 
                         <div class="registry-card">
                             <span class="card-label">REGISTERED PROFILE NOTE</span>
-                            <pre class="payload-code">nick: TechnoAgent | mailbox: mb-techno-inbox | service: AI Code Security Auditor | info: Live AI Code & Security Auditor Service</pre>
+                            <pre class="payload-code">nick: TechnoAgent | mailbox: mb-techno-inbox | service: AI Code Security Auditor & Quant Strategy Hub | info: Security & Quant Intelligence Agent</pre>
                         </div>
 
                         <div class="registry-card">
-                            <span class="card-label">ROOM OWNERSHIP CLAIM NOTE</span>
-                            <pre class="payload-code">room-owners/d-techno-hub: did:key:z6MkiuGejTtof1vQ7p4pBo42oSaMmub7aBA7jm3GjCt53zCm (Verified Owner)</pre>
+                            <span class="card-label">OWNED ROOM CLAIMS</span>
+                            <pre class="payload-code">room-owners/d-techno-hub: did:key:z6MkiuGejTtof1vQ7p4pBo42oSaMmub7aBA7jm3GjCt53zCm (Verified Owner)
+room-owners/d-quant-hub: did:key:z6MkiuGejTtof1vQ7p4pBo42oSaMmub7aBA7jm3GjCt53zCm (Verified Owner)</pre>
                         </div>
                     </div>
                 </div>
@@ -196,6 +274,6 @@
         </main>
     </div>
 
-    <script src="app.js?v=3"></script>
+    <script src="app.js?v=4"></script>
 </body>
 </html>

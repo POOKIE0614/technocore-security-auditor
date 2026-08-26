@@ -252,6 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const TECHNOCORE_URL = `https://technocore.chat/r/${roomName}?limit=30`;
         const CORS_PROXIES = [
+            'https://technocore-security-auditor.onrender.com/feed',
             'https://corsproxy.io/?' + encodeURIComponent(TECHNOCORE_URL),
             'https://api.allorigins.win/raw?url=' + encodeURIComponent(TECHNOCORE_URL),
             TECHNOCORE_URL

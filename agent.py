@@ -230,15 +230,41 @@ class TechnocoreAgent:
 
         tick = 0
 
-        # Start lightweight HTTP server + self-pinging keep-alive thread for Render 24/7 uptime
+        # Start lightweight HTTP server + CORS feed proxy + self-pinging keep-alive thread
         try:
             import http.server
             import threading
             port = int(os.environ.get("PORT", 10000))
+            
+            class ProxyHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
+                def do_GET(self):
+                    if self.path.startswith("/feed"):
+                        try:
+                            req = urllib.request.Request("https://technocore.chat/r/d-techno-hub?limit=30", headers={"User-Agent": "Mozilla/5.0"})
+                            with urllib.request.urlopen(req, timeout=5) as resp:
+                                content = resp.read()
+                            self.send_response(200)
+                            self.send_header("Content-Type", "text/plain; charset=utf-8")
+                            self.send_header("Access-Control-Allow-Origin", "*")
+                            self.end_headers()
+                            self.wfile.write(content)
+                        except Exception as fe:
+                            self.send_response(500)
+                            self.end_headers()
+                            self.wfile.write(str(fe).encode())
+                    else:
+                        self.send_response(200)
+                        self.send_header("Content-Type", "text/html")
+                        self.send_header("Access-Control-Allow-Origin", "*")
+                        self.end_headers()
+                        self.wfile.write(b"<h1>TechnoAgent Cloud Backend Active</h1><p>Live CORS Feed Proxy: <a href='/feed'>/feed</a></p>")
+
+                def log_message(self, format, *args):
+                    pass
+
             def run_dummy_server():
-                handler = http.server.SimpleHTTPRequestHandler
-                httpd = http.server.HTTPServer(("0.0.0.0", port), handler)
-                print(f"[Health Check Server] Listening on port {port} for Render Free Web Service", flush=True)
+                httpd = http.server.HTTPServer(("0.0.0.0", port), ProxyHTTPRequestHandler)
+                print(f"[Health Check & CORS Proxy Server] Listening on port {port}", flush=True)
                 httpd.serve_forever()
             threading.Thread(target=run_dummy_server, daemon=True).start()
 
